@@ -17,15 +17,15 @@ public class SortName {
         return sortName;
     }
 
-    public void setSortName(String sortName) {
+ /*   public void setSortName(String sortName) {
         this.sortName = sortName;
-    }
+    }*/
 
     public ArrayList<SortItem> getmSortItems() {
         return mSortItems;
     }
 
-    public void setmSortItems(ArrayList<SortItem> mSortItems) {
+    /*public void setmSortItems(ArrayList<SortItem> mSortItems) {
         this.mSortItems = mSortItems;
-    }
+    }*/
 }

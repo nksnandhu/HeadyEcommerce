@@ -53,17 +53,17 @@ public class Products {
         return categoryId;
     }
 
-    public void setCategoryId(int categoryId) {
+   /* public void setCategoryId(int categoryId) {
         this.categoryId = categoryId;
-    }
+    }*/
 
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
+  /*  public void setId(int id) {
         this.id = id;
-    }
+    }*/
 
     public String getProductName() {
         return productName;

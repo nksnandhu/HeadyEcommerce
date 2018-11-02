@@ -20,8 +20,23 @@
     <!--</android.support.design.widget.AppBarLayout>-->
 
 
-    <include layout="@layout/product_view_content" />
+    <TextView
+        android:id="@+id/tvSort"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="end"
+        android:drawableStart="@drawable/ic_sort"
+        android:gravity="center|start"
+        android:text="@string/promt_sort" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/userList"
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="55dp" />
+
     <!-- Adding bottom sheet after main content -->
-    <include layout="@layout/bottom_sheet_variant" />
+    <include layout="@layout/bottom_sheet_sort" />
 
 </android.support.design.widget.CoordinatorLayout>

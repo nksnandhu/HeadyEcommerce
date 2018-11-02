@@ -38,8 +38,6 @@ public class ProductViewFragment extends Fragment {
     private ImageView ivSelectedColor;
     private int iColor = 0;
    // private int id;
-
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -115,6 +113,9 @@ public class ProductViewFragment extends Fragment {
 
     //dynamic create Image view  based on color
     private void getBottomSheet(List<Variants> variants1) {
+        if (mLnrColorView.getChildCount() != 0) {
+            mLnrColorView.removeAllViews();
+        }
         HashSet<String> h = new HashSet<>();
         for (int i = 0; i < variants1.size(); i++) {
             h.add(variants1.get(i).getVariantColor());

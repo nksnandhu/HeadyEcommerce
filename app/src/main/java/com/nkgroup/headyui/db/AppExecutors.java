@@ -38,15 +38,14 @@ public class AppExecutors {
 
    // private final Executor mMainThread;
 
-    private AppExecutors(Executor diskIO, Executor mainThread) {
+    private AppExecutors(Executor diskIO) {
         this.mDiskIO = diskIO;
        // this.mNetworkIO = networkIO;
        // this.mMainThread = mainThread;
     }
 
     public AppExecutors() {
-        this(Executors.newSingleThreadExecutor(),
-                new MainThreadExecutor());
+        this(Executors.newSingleThreadExecutor());
     }
 
     Executor diskIO() {
@@ -62,7 +61,7 @@ public class AppExecutors {
         return mMainThread;
     }
 */
-
+/*
     private static class MainThreadExecutor implements Executor {
         private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
@@ -70,5 +69,5 @@ public class AppExecutors {
         public void execute(@NonNull Runnable command) {
             mainThreadHandler.post(command);
         }
-    }
+    }*/
 }

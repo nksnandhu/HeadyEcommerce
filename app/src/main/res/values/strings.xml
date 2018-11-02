@@ -3,4 +3,5 @@
     <string name="prompt_id">Id</string>
     <string name="prompt_product_name">Product Name</string>
     <string name="prompt_null">null</string>
+    <string name="promt_sort">Sort</string>
 </resources>

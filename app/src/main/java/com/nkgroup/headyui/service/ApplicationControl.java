@@ -4,9 +4,7 @@ import android.app.Application;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-
 import com.android.volley.toolbox.Volley;
-import com.nkgroup.headyui.db.AppDataBase;
 
 
 
@@ -38,17 +36,16 @@ public class ApplicationControl extends Application {
         getRequestQueue().add(req);
     }
 
-    public void cancelPendingRequests(Object tag) {
+   /* public void cancelPendingRequests(Object tag) {
         if (mRequestQueue != null) {
             mRequestQueue.cancelAll(tag);
         }
-    }
+    }*/
   /*  public void setConnectivityListener(ConnectivityReceiver.ConnectivityReceiverListener listener) {
         ConnectivityReceiver.connectivityReceiverListener = listener;
     }*/
 
-    public AppDataBase getDatabase() { return AppDataBase.getDatabase(this);
-    }
+
 
 
 }

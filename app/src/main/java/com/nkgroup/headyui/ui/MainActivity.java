@@ -13,28 +13,50 @@ import android.widget.Toast;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.nkgroup.headyui.db.AppDataBase;
 import com.nkgroup.headyui.R;
+import com.nkgroup.headyui.db.AppExecutors;
 import com.nkgroup.headyui.model.Category;
 import com.nkgroup.headyui.model.Products;
+import com.nkgroup.headyui.model.SortItem;
 import com.nkgroup.headyui.model.SortName;
+import com.nkgroup.headyui.model.Variants;
+import com.nkgroup.headyui.service.VolleyService;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+import static com.nkgroup.headyui.db.AppDataBase.buildDateBase;
+
+public class MainActivity extends AppCompatActivity implements VolleyService.ResponseListener {
+
     public static final ArrayList<SortName> mListSort = new ArrayList<>();
     @SuppressLint("StaticFieldLeak")
     public static MaterialSearchView searchView;
+    private VolleyService volleyService;
+    private AppExecutors mAppExecutors;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar myToolbar = findViewById(R.id.toolbar);
+        volleyService = new VolleyService(this);
+        mAppExecutors = new AppExecutors();
         setSupportActionBar(myToolbar);
         if (savedInstanceState == null) {
             CategoryFragment fragment = new CategoryFragment();
             getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment, "ProductListViewModel").commit();
             getSearch();
+            getCategory();
         }
+    }
+
+    private void getCategory() {
+        volleyService.getObjectResponse();
     }
 
     private void getSearch() {
@@ -80,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("StaticFieldLeak")
-    private class insertAsyncTask extends AsyncTask<Void, Void, Integer> implements com.nkgroup.headyui.ui.insertAsyncTask {
+    private class insertAsyncTask extends AsyncTask<Void, Void, Integer> {
         private final AppDataBase db;
         String str;
         int id = 0;
@@ -117,32 +139,25 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Integer response) {
             super.onPostExecute(response);
-            if (response == 1) {
-                ProductListFragment fragment = new ProductListFragment();
+            if (response != 0) {
                 Bundle bundle = new Bundle();
                 bundle.putInt("Id", id);
                 bundle.putString("name", str);
-                fragment.setArguments(bundle);
-                assert getFragmentManager() != null;
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .addToBackStack("category")
-                        .replace(R.id.fragment_container,
-                                fragment, null).commit();
-            } else if (response == 2) {
-                ProductViewFragment fragment = new ProductViewFragment();
-                Bundle bundle = new Bundle();
-                bundle.putInt("Id", id);
-                bundle.putString("name", str);
-                bundle.putString("color", color);
-                bundle.putDouble("price", price);
-                fragment.setArguments(bundle);
-                assert getFragmentManager() != null;
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .addToBackStack("product")
-                        .replace(R.id.fragment_container,
-                                fragment, null).commit();
+                if (response == 1) {
+                    ProductListFragment fragment = new ProductListFragment();
+                    fragment.setArguments(bundle);
+                    assert getFragmentManager() != null;
+                    getSupportFragmentManager().beginTransaction().addToBackStack("category")
+                            .replace(R.id.fragment_container, fragment, null).commit();
+                } else if (response == 2) {
+                    ProductViewFragment fragment = new ProductViewFragment();
+                    bundle.putString("color", color);
+                    bundle.putDouble("price", price);
+                    fragment.setArguments(bundle);
+                    assert getFragmentManager() != null;
+                    getSupportFragmentManager().beginTransaction().addToBackStack("product")
+                            .replace(R.id.fragment_container, fragment, null).commit();
+                }
             } else {
                 Toast.makeText(MainActivity.this, "No Data Found", Toast.LENGTH_SHORT).show();
             }
@@ -153,31 +168,80 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
-
-
-
-   /* boolean doubleBackToExitPressedOnce = false;
-
     @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed();
-            finish();
-            return;
-        }
-        if (searchView.isSearchOpen()) {
-            searchView.closeSearch();
-        }
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+    public void onObjectListener(JSONObject jsonObject) {
+        List<Category> mListCategory = new ArrayList<>();
+        List<Products> mListProduct = new ArrayList<>();
+        List<Variants> mListVariant = new ArrayList<>();
+        ArrayList<SortItem> mListMostViewedProducts;
+        try {
+            JSONArray jAryCategory = jsonObject.getJSONArray("categories");
+            for (int posCategory = 0; posCategory < jAryCategory.length(); posCategory++) {
+                JSONObject jObjCategoryItem = jAryCategory.getJSONObject(posCategory);
+                int categoryId = jObjCategoryItem.getInt("id");
+                String categoryName = jObjCategoryItem.getString("name");
+                mListCategory.add(new Category(categoryId, categoryName));
+                JSONArray jAryProducts = jObjCategoryItem.getJSONArray("products");
+                for (int posProduct = 0; posProduct < jAryProducts.length(); posProduct++) {
+                    JSONObject jObjProductItem = jAryProducts.getJSONObject(posProduct);
+                    int productId = jObjProductItem.getInt("id");
+                    String productNae = jObjProductItem.getString("name");
+                    String ProductAddedDate = jObjProductItem.getString("date_added");
+                    JSONArray jAryVariants = jObjProductItem.getJSONArray("variants");
+                    double displayPrice = 0;
+                    String currentDisplayColor = "";
+                    for (int postVariants = 0; postVariants < jAryVariants.length(); postVariants++) {
+                        JSONObject jObjVariantsItem = jAryVariants.getJSONObject(postVariants);
+                        int variantId = jObjVariantsItem.getInt("id");
+                        String variantColor = jObjVariantsItem.getString("color");
+                        String variantSize = jObjVariantsItem.getString("size");
+                        double variantPrice = jObjVariantsItem.getDouble("price");
+                        mListVariant.add(new Variants(variantId, productId, variantColor, variantSize, variantPrice));
+                        if (postVariants == 0) {
+                            displayPrice = variantPrice;//low price  & color will display
+                            currentDisplayColor = variantColor;
+                        } else if (displayPrice > variantPrice) {
+                            displayPrice = variantPrice;
+                            currentDisplayColor = variantColor;
+                        }
+                    }
 
-        new Handler().postDelayed(new Runnable() {
+                    mListProduct.add(new Products(productId, categoryId, productNae, ProductAddedDate, displayPrice, currentDisplayColor));
 
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce=false;
+
+                   /* JSONObject jObjTaxItem = jObjProductItem.getJSONObject("tax");
+                    String name = jObjTaxItem.getString("name");
+                    String value = jObjTaxItem.getString("value");*/
+                }
+              /*  JSONArray jAryChildCategories = jObjCategoryItem.getJSONArray("child_categories");
+                for (int posChildCategories = 0; posChildCategories < jAryChildCategories.length(); posChildCategories++) {
+                  //  String sChildCategories = jAryChildCategories.optString(posChildCategories);
+                }*/
             }
-        }, 2000);
-    }*/
+            JSONArray jAryRankings = jsonObject.getJSONArray("rankings");
+            for (int postRanding = 0; postRanding < jAryRankings.length(); postRanding++) {
+                JSONObject jObjRankingItem = jAryRankings.getJSONObject(postRanding);
+                mListMostViewedProducts = new ArrayList<>();
+                JSONArray jAryRankingProduct = jObjRankingItem.getJSONArray("products");
+                for (int postProduct = 0; postProduct < jAryRankingProduct.length(); postProduct++) {
+                    JSONObject jObjRankingProduct = jAryRankingProduct.getJSONObject(postProduct);
+                    Iterator<String> keys = jObjRankingProduct.keys();
+                    int count = 0;
+                    int id = jObjRankingProduct.getInt("id");
+                    while (keys.hasNext()) {
+                        String keyValue = keys.next();
+                        if (!keyValue.equals("id")) {
+                            count = jObjRankingProduct.getInt(keyValue);
+                        }
+                    }
+                    mListMostViewedProducts.add(new SortItem(id, count));
+                }
+                mListSort.add(new SortName(jObjRankingItem.getString("ranking"), mListMostViewedProducts));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        buildDateBase(this, mAppExecutors, mListCategory, mListProduct, mListVariant);
+        //  ShowData(viewModel);
+    }
 }

@@ -16,7 +16,6 @@ import com.nkgroup.headyui.dao.VariantsDao;
 import java.util.List;
 
 @Database(entities = {Category.class, Products.class, Variants.class}, version = 1)
-@TypeConverters(DateConverter.class)
 abstract public class AppDataBase extends RoomDatabase {
 
     private static final String DATABASE_NAME = "ListDb";
